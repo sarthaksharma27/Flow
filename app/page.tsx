@@ -62,7 +62,7 @@ export default function Home() {
       {/* How It Works Section */}
       <section className="py-20 bg-white">
         <div className="max-w-5xl mx-auto px-4 space-y-12">
-          <h2 className="text-3xl font-semibold text-center">How it works</h2>
+          <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-center">How it works</h2>
 
           <div className="grid md:grid-cols-3 gap-10 text-center text-zinc-700">
             <div className="space-y-2">
