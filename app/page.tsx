@@ -16,7 +16,7 @@ export default function Home() {
             </Button>
 
             <Button className="text-sm px-4 py-2" asChild>
-              <a href="/get-started">Get started</a>
+              <a href="/signin">Get started</a>
             </Button>
           </div>
         </div>
