@@ -37,9 +37,14 @@ export default function Dashboard() {
       })
         .then(res => res.json())
         .then(data => {
-          console.log("Response from API:", data)
-          // You could update preview state here
+
+          const rawCode = data.code
+            .replace(/^```(?:\w+)?\n/, "")  
+            .replace(/```$/, "")           
+
+          console.log("Clean Python Code:\n", rawCode)
         })
+
         .catch(err => {
           console.error("Error:", err)
         })
