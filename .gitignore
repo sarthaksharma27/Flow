@@ -1,0 +1,44 @@
+# === OS Files ===
+.DS_Store
+Thumbs.db
+
+# === Editor Configs ===
+.vscode/
+.idea/
+*.swp
+*.swo
+*.bak
+
+# === Logs ===
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# === Environment files ===
+.env
+.env.*
+!.env.example
+
+# === Docker ===
+docker-compose.override.yml
+*.pid
+
+# === Build artifacts (catch-all) ===
+dist/
+build/
+.cache/
+.next/
+out/
+coverage/
+turbo/
+*.tsbuildinfo
+
+# === Node dependencies (across services) ===
+**/node_modules/
+
+# === Misc ===
+*.local
+*.lock
