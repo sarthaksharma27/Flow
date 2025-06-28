@@ -11,11 +11,11 @@ export default function Dashboard() {
   const { data: session, status } = useSession()
   const router = useRouter()
 
-  const [prompt, setPrompt] = useState("")
+  const [prompt, setPrompt] = useState("") // state to track textarea content
 
   useEffect(() => {
     if (status === "unauthenticated") {
-      router.push("/signin")
+      router.push("/signin") // redirect if not logged in
     }
   }, [status, router])
 
@@ -32,13 +32,15 @@ export default function Dashboard() {
 
     const data = await res.json()
     console.log("Response from API:", data)
+
+    setPrompt("") // <-- this clears the textarea after submit
   }
 
   return (
     <div className="min-h-screen bg-black text-white p-6">
       <div className="max-w-6xl mx-auto space-y-8">
 
-        {/* User Info */}
+        {/* User Info Header */}
         <div className="flex items-center space-x-4">
           <Avatar className="h-14 w-14">
             <AvatarImage src={session?.user?.image ?? ""} alt={session?.user?.name ?? "User"} />
@@ -54,8 +56,9 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Main Interaction Area */}
+        {/* Main Content Area */}
         <div className="flex flex-col md:flex-row md:space-x-8 space-y-6 md:space-y-0">
+          {/* Left: Input area */}
           <div className="flex-1 space-y-3">
             <label htmlFor="prompt" className="text-sm font-medium">
               Animation Prompt
@@ -75,7 +78,7 @@ export default function Dashboard() {
             </Button>
           </div>
 
-          {/* Video preview area */}
+          {/* Right: Video Preview and Download */}
           <div className="flex-1 space-y-4">
             <div className="aspect-[16/9] w-full bg-zinc-900 rounded-xl flex items-center justify-center shadow-md">
               <span className="text-zinc-500">[Video Preview Placeholder]</span>
