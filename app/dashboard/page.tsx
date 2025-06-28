@@ -11,11 +11,12 @@ export default function Dashboard() {
   const { data: session, status } = useSession()
   const router = useRouter()
 
-  const [prompt, setPrompt] = useState("") // state to track textarea content
+  const [prompt, setPrompt] = useState("")
+  const [loading, setLoading] = useState(false) // 👈 Loader state
 
   useEffect(() => {
     if (status === "unauthenticated") {
-      router.push("/signin") // redirect if not logged in
+      router.push("/signin")
     }
   }, [status, router])
 
@@ -24,27 +25,29 @@ export default function Dashboard() {
   }
 
   const handleGenerate = async () => {
-  const currentPrompt = prompt
-  setPrompt("") // clear immediately
+    const currentPrompt = prompt
+    setPrompt("")
+    setLoading(true) // 👈 Start loader
 
-  // Let the DOM update first
-  requestAnimationFrame(() => {
-    fetch("/api/generate", {
-      method: "POST",
-      body: JSON.stringify({ prompt: currentPrompt }),
-      headers: { "Content-Type": "application/json" },
+    requestAnimationFrame(() => {
+      fetch("/api/generate", {
+        method: "POST",
+        body: JSON.stringify({ prompt: currentPrompt }),
+        headers: { "Content-Type": "application/json" },
+      })
+        .then(res => res.json())
+        .then(data => {
+          console.log("Response from API:", data)
+          // You could update preview state here
+        })
+        .catch(err => {
+          console.error("Error:", err)
+        })
+        .finally(() => {
+          setLoading(false) // 👈 Stop loader
+        })
     })
-      .then(res => res.json())
-      .then(data => {
-        console.log("Response from API:", data)
-        // optionally handle data here
-      })
-      .catch(err => {
-        console.error("Error:", err)
-      })
-  })
-}
-
+  }
 
   return (
     <div className="min-h-screen bg-black text-white p-6">
@@ -83,18 +86,37 @@ export default function Dashboard() {
             <Button
               className="mt-2 w-full md:w-auto border border-white hover:shadow-[0_0_10px_white]"
               onClick={handleGenerate}
+              disabled={loading} // 👈 disable during loading
             >
-              Generate Animation
+              {loading ? (
+                <>
+                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                  Generating...
+                </>
+              ) : (
+                "Generate Animation"
+              )}
             </Button>
           </div>
 
           {/* Right: Video Preview and Download */}
           <div className="flex-1 space-y-4">
             <div className="aspect-[16/9] w-full bg-zinc-900 rounded-xl flex items-center justify-center shadow-md">
-              <span className="text-zinc-500">Your preview will appear here</span>
+              {loading ? (
+                <div className="flex flex-col items-center justify-center space-y-3 text-zinc-400">
+                  <div className="w-10 h-10 border-4 border-white border-t-transparent rounded-full animate-spin" />
+                  <p className="text-sm animate-pulse">Generating animation preview...</p>
+                </div>
+              ) : (
+                <span className="text-zinc-500">Your preview will appear here</span>
+              )}
             </div>
             <div className="flex justify-end">
-              <Button variant="secondary" className="bg-white text-black hover:bg-zinc-200">
+              <Button
+                variant="secondary"
+                className="bg-white text-black hover:bg-zinc-200"
+                disabled={loading} // 👈 optional: disable download until ready
+              >
                 Download Video
               </Button>
             </div>
