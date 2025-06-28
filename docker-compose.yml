@@ -1,0 +1,19 @@
+version: "3.8"
+
+services:
+  redis:
+    image: redis:7
+    container_name: redis
+    ports:
+      - "6379:6379"
+
+  ws-server:
+    build:
+      context: ./ws-server
+    container_name: ws-server
+    env_file:
+      - ./ws-server/.env
+    ports:
+      - "4000:4000"
+    depends_on:
+      - redis
