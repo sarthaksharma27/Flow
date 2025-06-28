@@ -24,17 +24,27 @@ export default function Dashboard() {
   }
 
   const handleGenerate = async () => {
-    const res = await fetch("/api/generate", {
+  const currentPrompt = prompt
+  setPrompt("") // clear immediately
+
+  // Let the DOM update first
+  requestAnimationFrame(() => {
+    fetch("/api/generate", {
       method: "POST",
-      body: JSON.stringify({ prompt }),
+      body: JSON.stringify({ prompt: currentPrompt }),
       headers: { "Content-Type": "application/json" },
     })
+      .then(res => res.json())
+      .then(data => {
+        console.log("Response from API:", data)
+        // optionally handle data here
+      })
+      .catch(err => {
+        console.error("Error:", err)
+      })
+  })
+}
 
-    const data = await res.json()
-    console.log("Response from API:", data)
-
-    setPrompt("") // <-- this clears the textarea after submit
-  }
 
   return (
     <div className="min-h-screen bg-black text-white p-6">
@@ -81,7 +91,7 @@ export default function Dashboard() {
           {/* Right: Video Preview and Download */}
           <div className="flex-1 space-y-4">
             <div className="aspect-[16/9] w-full bg-zinc-900 rounded-xl flex items-center justify-center shadow-md">
-              <span className="text-zinc-500">[Video Preview Placeholder]</span>
+              <span className="text-zinc-500">Your preview will appear here</span>
             </div>
             <div className="flex justify-end">
               <Button variant="secondary" className="bg-white text-black hover:bg-zinc-200">
