@@ -25,34 +25,46 @@ export default function Dashboard() {
   }
 
   const handleGenerate = async () => {
-    const currentPrompt = prompt
-    setPrompt("")
-    setLoading(true) // 👈 Start loader
+  const currentPrompt = prompt
+  setPrompt("")
+  setLoading(true)
 
-    requestAnimationFrame(() => {
-      fetch("/api/generate", {
-        method: "POST",
-        body: JSON.stringify({ prompt: currentPrompt }),
-        headers: { "Content-Type": "application/json" },
-      })
-        .then(res => res.json())
-        .then(data => {
-
-          const rawCode = data.code
-            .replace(/^```(?:\w+)?\n/, "")  
-            .replace(/```$/, "")           
-
-          console.log("Clean Python Code:\n", rawCode)
-        })
-
-        .catch(err => {
-          console.error("Error:", err)
-        })
-        .finally(() => {
-          setLoading(false) // 👈 Stop loader
-        })
+  requestAnimationFrame(() => {
+    fetch("/api/generate", {
+      method: "POST",
+      body: JSON.stringify({ prompt: currentPrompt }),
+      headers: { "Content-Type": "application/json" },
     })
-  }
+      .then(res => res.json())
+      .then(async data => {
+        // 🧹 Clean up the raw code
+        const rawCode = data.code
+          .replace(/^```(?:\w+)?\n/, "")
+          .replace(/```$/, "")
+
+        console.log("Clean Python Code:\n", rawCode)
+
+        // 🎯 Send to video generation API
+        const videoRes = await fetch("/api/videoGenerate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ code: rawCode }),
+        })
+
+        const videoData = await videoRes.json()
+        console.log("Video generation response:", videoData)
+
+        // You can now update UI with videoData (e.g., preview URL, status, etc.)
+      })
+      .catch(err => {
+        console.error("Error:", err)
+      })
+      .finally(() => {
+        setLoading(false)
+      })
+  })
+}
+
 
   return (
     <div className="min-h-screen bg-black text-white p-6">
