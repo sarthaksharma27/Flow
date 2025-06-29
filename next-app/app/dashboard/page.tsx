@@ -6,7 +6,9 @@ import { useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { getSocket } from "@/lib/socket"; // 👈 WebSocket client singleton
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import { Sparkles } from "lucide-react";
+import { getSocket } from "@/lib/socket";
 
 export default function Dashboard() {
   const { data: session, status } = useSession();
@@ -15,6 +17,14 @@ export default function Dashboard() {
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
   const [videoUrl, setVideoUrl] = useState("");
+
+  const magicPrompts = [
+    "Demonstrate rotating a 2D matrix (3x3 or 4x4) clockwise 90 degrees, with original and rotated versions side-by-side.",
+    "Animate a basic client-server interaction: a browser sends a request to a server, the server processes it and returns a response, highlighting HTTP flow and endpoints.",
+    "Show a binary tree and animate an in-order traversal, highlighting each visited node in order (left, root, right).",
+    "Show a simple neural network (input, hidden, and output layers), animating the forward pass of data with weights and activations.",
+    "Animate the TCP handshake: SYN, SYN-ACK, ACK between client and server, highlighting packets and sequence numbers.",
+  ];
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -56,7 +66,6 @@ export default function Dashboard() {
       const data = await res.json();
       const rawCode = data.code.replace(/^```(?:\w+)?\n/, "").replace(/```$/, "");
       console.log(rawCode);
-      
 
       const videoRes = await fetch("/api/videoGenerate", {
         method: "POST",
@@ -71,8 +80,6 @@ export default function Dashboard() {
       socket.emit("join", jobId);
     } catch (err) {
       console.error("❌ Error:", err);
-    } finally {
-      // setLoading(false);
     }
   };
 
@@ -83,7 +90,7 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-black text-white p-6">
       <div className="max-w-6xl mx-auto space-y-8">
-        {/* User Info Header */}
+        {/* Header */}
         <div className="flex items-center space-x-4">
           <Avatar className="h-14 w-14">
             <AvatarImage src={session?.user?.image ?? ""} alt={session?.user?.name ?? "User"} />
@@ -95,20 +102,52 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Main Content */}
+        {/* Content */}
         <div className="flex flex-col md:flex-row md:space-x-8 space-y-6 md:space-y-0">
-          {/* Left: Input */}
+          {/* Input Area */}
           <div className="flex-1 space-y-3">
             <label htmlFor="prompt" className="text-sm font-medium">
               Animation Prompt
             </label>
-            <Textarea
-              id="prompt"
-              placeholder="e.g. Show the Pythagorean theorem visually..."
-              className="text-white bg-zinc-800 resize-none h-[120px] border border-zinc-700 placeholder:text-zinc-400"
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-            />
+
+            {/* Textarea + Magic Prompt Button */}
+            <div className="relative">
+              <Textarea
+                id="prompt"
+                placeholder="e.g. Show the Pythagorean theorem visually..."
+                className="text-white bg-zinc-800 resize-none h-[120px] border border-zinc-700 placeholder:text-zinc-400 pr-10"
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+              />
+
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    className="absolute top-2 right-2 p-1 rounded-md hover:bg-zinc-700 transition"
+                    title="Insert magic prompt"
+                  >
+                    <Sparkles className="w-5 h-5 text-zinc-300" />
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent
+                  side="top"
+                  className="bg-zinc-900 border-zinc-700 w-80 space-y-1 p-2 rounded-md shadow-lg"
+                >
+                  <p className="text-sm text-zinc-400 mb-1">Choose a sample prompt:</p>
+                  {magicPrompts.map((item, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setPrompt(item)}
+                      className="text-left w-full text-sm text-zinc-200 hover:bg-zinc-800 rounded-md px-2 py-1"
+                    >
+                      {item}
+                    </button>
+                  ))}
+                </PopoverContent>
+              </Popover>
+            </div>
+
             <Button
               className="mt-2 w-full md:w-auto border border-white hover:shadow-[0_0_10px_white]"
               onClick={handleGenerate}
@@ -125,7 +164,7 @@ export default function Dashboard() {
             </Button>
           </div>
 
-          {/* Right: Video Preview */}
+          {/* Video Preview */}
           <div className="flex-1 space-y-4">
             <div className="aspect-[16/9] w-full bg-zinc-900 rounded-xl flex items-center justify-center shadow-md">
               {loading ? (
@@ -142,23 +181,6 @@ export default function Dashboard() {
               ) : (
                 <span className="text-zinc-500">Your preview will appear here</span>
               )}
-            </div>
-            <div className="flex justify-end">
-              <Button
-                variant="secondary"
-                className="bg-white text-black hover:bg-zinc-200"
-                disabled={!videoUrl}
-                onClick={() => {
-                  if (videoUrl) {
-                    const link = document.createElement("a");
-                    link.href = videoUrl;
-                    link.download = "generated-video.mp4";
-                    link.click();
-                  }
-                }}
-              >
-                Download Video
-              </Button>
             </div>
           </div>
         </div>
