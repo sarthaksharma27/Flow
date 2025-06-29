@@ -41,10 +41,12 @@ io.on("connection", (socket) => {
 redis.subscribe("video-ready", (message) => {
   try {
     const { jobId, videoUrl } = JSON.parse(message);
-    console.log(`📡 PubSub received: jobId=${jobId}`);
+    console.log(`📡 PubSub received: jobId=${jobId} and videoURL=${videoUrl}`);
 
     // Emit to room
     io.to(jobId).emit("video:done", { videoUrl });
+    console.log("Vidoe url send to the frontend");
+    
   } catch (err) {
     console.error("❌ Failed to parse Redis message:", err);
   }
