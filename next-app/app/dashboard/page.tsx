@@ -31,6 +31,7 @@ export default function Dashboard() {
 
     socket.on("video:done", ({ videoUrl }) => {
       console.log("🎥 Video Ready:", videoUrl);
+      setLoading(false);
       setVideoUrl(videoUrl);
     });
 
@@ -71,7 +72,7 @@ export default function Dashboard() {
     } catch (err) {
       console.error("❌ Error:", err);
     } finally {
-      setLoading(false);
+      // setLoading(false);
     }
   };
 
