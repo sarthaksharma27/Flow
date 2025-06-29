@@ -19,7 +19,6 @@ if (!AZURE_STORAGE_CONNECTION_STRING) {
 const containerName = 'videos';
 
 (async () => {
-  // Redis Pub Client
   const pub = createClient({ url: REDIS_URL });
 
   try {
@@ -30,12 +29,10 @@ const containerName = 'videos';
     process.exit(1);
   }
 
-  // BullMQ Worker
   const videoWorker = new Worker(
     'video-generation',
     async (job: Job) => {
       const { code, jobId } = job.data;
-
       console.log(`🎯 Received job: ${jobId}`);
 
       const pyFile = `/tmp/${jobId}.py`;
@@ -69,12 +66,16 @@ const containerName = 'videos';
 // ---- Run Manim CLI ----
 function runManim(filePath: string, jobId: string): Promise<string> {
   return new Promise((resolve, reject) => {
+    const outputFile = `${jobId}.mp4`;
+
     const manim = spawn('manim', [
       filePath,
-      'MyScene', // TODO: Make scene name dynamic
+      'MyScene',
       '-qm',
       '-o',
-      `${jobId}.mp4`,
+      outputFile,
+      '--media_dir',
+      '/tmp'
     ]);
 
     manim.stdout.on('data', data => console.log(`🎞️ ${data}`));
@@ -82,13 +83,36 @@ function runManim(filePath: string, jobId: string): Promise<string> {
 
     manim.on('close', code => {
       if (code === 0) {
-        const resultPath = path.join('/tmp', `${jobId}.mp4`);
-        resolve(resultPath);
+        const actualPath = findFileRecursive('/tmp', outputFile);
+        if (actualPath) {
+          console.log(`✅ Manim rendered video at: ${actualPath}`);
+          resolve(actualPath);
+        } else {
+          reject(new Error(`Rendered video not found in /tmp for ${jobId}`));
+        }
       } else {
         reject(new Error(`Manim failed with exit code ${code}`));
       }
     });
   });
+}
+
+// ---- Recursively find file ----
+function findFileRecursive(dir: string, filename: string): string | null {
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
+
+  for (const entry of entries) {
+    const fullPath = path.join(dir, entry.name);
+
+    if (entry.isDirectory()) {
+      const nested = findFileRecursive(fullPath, filename);
+      if (nested) return nested;
+    } else if (entry.isFile() && entry.name === filename) {
+      return fullPath;
+    }
+  }
+
+  return null;
 }
 
 // ---- Upload to Azure Blob ----
@@ -101,6 +125,9 @@ async function uploadToAzure(filePath: string, jobId: string): Promise<string> {
 
   const videoData = fs.readFileSync(filePath);
   await blockBlobClient.uploadData(videoData);
+
+  // Optional: clean up
+  fs.unlinkSync(filePath);
 
   return blockBlobClient.url;
 }
