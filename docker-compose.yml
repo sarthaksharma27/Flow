@@ -17,3 +17,14 @@ services:
       - "4000:4000"
     depends_on:
       - redis
+
+  worker:
+    build:
+      context: ./worker  
+    container_name: manim-worker
+    env_file:
+      - ./worker/.env
+    depends_on:
+      - redis
+    volumes:
+      - ./media:/app/media 

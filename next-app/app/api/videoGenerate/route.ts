@@ -11,6 +11,7 @@ export async function POST(req: NextRequest) {
 
     // Add job to BullMQ
     await videoQueue.add("generate-video", { code, jobId }, { jobId })
+    console.log("Job Added to the queue")
 
     return NextResponse.json({ jobId }) // Client gets this
   } catch (error) {
