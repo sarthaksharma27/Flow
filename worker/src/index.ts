@@ -3,7 +3,13 @@ import { createClient } from 'redis';
 import fs from 'fs';
 import path from 'path';
 import { spawn } from 'child_process';
-import { BlobServiceClient } from '@azure/storage-blob';
+import {
+  BlobServiceClient,
+  StorageSharedKeyCredential,
+  generateBlobSASQueryParameters,
+  BlobSASPermissions,
+  SASProtocol
+} from '@azure/storage-blob';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -115,7 +121,15 @@ function findFileRecursive(dir: string, filename: string): string | null {
   return null;
 }
 
-// ---- Upload to Azure Blob ----
+// ---- Upload and generate signed URL ----
+function extractAccountKey(connectionString: string): string {
+  const match = connectionString.match(/AccountKey=([^;]+)/);
+  if (!match) {
+    throw new Error('Could not extract AccountKey from connection string');
+  }
+  return match[1];
+}
+
 async function uploadToAzure(filePath: string, jobId: string): Promise<string> {
   const blobServiceClient = BlobServiceClient.fromConnectionString(AZURE_STORAGE_CONNECTION_STRING!);
   const containerClient = blobServiceClient.getContainerClient(containerName);
@@ -126,8 +140,23 @@ async function uploadToAzure(filePath: string, jobId: string): Promise<string> {
   const videoData = fs.readFileSync(filePath);
   await blockBlobClient.uploadData(videoData);
 
-  // Optional: clean up
   fs.unlinkSync(filePath);
 
-  return blockBlobClient.url;
+  const accountName = blobServiceClient.accountName;
+  const accountKey = extractAccountKey(AZURE_STORAGE_CONNECTION_STRING!);
+  const sharedKeyCredential = new StorageSharedKeyCredential(accountName, accountKey);
+
+  const sasParams = generateBlobSASQueryParameters(
+    {
+      containerName,
+      blobName,
+      permissions: BlobSASPermissions.parse("r"),
+      expiresOn: new Date(new Date().valueOf() + 60 * 60 * 1000), // 1 hour
+      protocol: SASProtocol.Https,
+    },
+    sharedKeyCredential
+  );
+
+  const signedUrl = `${blockBlobClient.url}?${sasParams.toString()}`;
+  return signedUrl;
 }
