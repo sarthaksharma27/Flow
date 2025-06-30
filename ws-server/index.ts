@@ -7,7 +7,6 @@ import { createClient } from "redis";
 const PORT = 4000;
 const REDIS_URL = "redis://localhost:6379";
 
-// ALLOWED ORIGINS (localhost + vercel)
 const ALLOWED_ORIGINS = [
   "http://localhost:3000",
   "https://flow-theta-inky.vercel.app"
