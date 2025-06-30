@@ -18,7 +18,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(false);
   const [videoUrl, setVideoUrl] = useState("");
   const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
-  const [validationError, setValidationError] = useState(""); // ✨ New state
+  const [validationError, setValidationError] = useState("");
 
   const magicPrompts = [
     "Animate a basic client-server interaction: a browser sends a request to a server, the server processes it and returns a response, highlighting HTTP flow and endpoints.",
@@ -35,15 +35,13 @@ export default function Dashboard() {
 
   useEffect(() => {
     const socket = getSocket();
-
     socket.on("connect", () => {
-       console.log("websocket connected");
-       
+      console.log("websocket connected");
     });
 
     socket.on("video:done", ({ videoUrl }) => {
       setLoading(false);
-      console.log("video URL recived from server");
+      console.log("video URL received from server");
       setVideoUrl(videoUrl);
     });
 
@@ -54,15 +52,12 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (!loading) return;
-
     const interval = setInterval(() => {
       setLoadingMessageIndex((prev) => (prev === 0 ? 1 : 0));
     }, 10000);
-
     return () => clearInterval(interval);
   }, [loading]);
 
-  // ✨ Auto-dismiss validation error
   useEffect(() => {
     if (validationError) {
       const timeout = setTimeout(() => setValidationError(""), 4000);
@@ -103,7 +98,6 @@ export default function Dashboard() {
       const videoData = await videoRes.json();
       const jobId = videoData.jobId;
       console.log("code generated with jobID", jobId);
-      
 
       const socket = getSocket();
       socket.emit("join", jobId);
@@ -157,7 +151,6 @@ export default function Dashboard() {
                 onChange={(e) => setPrompt(e.target.value)}
               />
 
-              {/* ✨ Magic Prompt Popover */}
               <Popover>
                 <PopoverTrigger asChild>
                   <button
@@ -185,7 +178,6 @@ export default function Dashboard() {
                 </PopoverContent>
               </Popover>
 
-              {/* ✨ Validation Error Popover */}
               {validationError && (
                 <Popover open={!!validationError}>
                   <PopoverTrigger asChild>
@@ -217,7 +209,6 @@ export default function Dashboard() {
             </Button>
           </div>
 
-          {/* Preview Section */}
           <div className="flex-1 space-y-4">
             <div className="aspect-[16/9] w-full bg-zinc-900 rounded-xl flex items-center justify-center shadow-md">
               {loading ? (
@@ -239,9 +230,30 @@ export default function Dashboard() {
                 <span className="text-zinc-500">Your preview will appear here</span>
               )}
             </div>
+
+            <p className="text-sm text-zinc-500 mt-2 glow-text">
+              Complex LaTeX may fail. If it hangs, refresh and try a simpler prompt.
+            </p>
           </div>
         </div>
       </div>
+
+      {/* 👇 Glow Animation Styles - no Tailwind config required */}
+      <style jsx>{`
+        @keyframes glow {
+          0%, 100% {
+            opacity: 0.6;
+            text-shadow: 0 0 10px #ffffff;
+          }
+          50% {
+            opacity: 1;
+            text-shadow: 0 0 20px #ffffff;
+          }
+        }
+        .glow-text {
+          animation: glow 2.5s ease-in-out infinite;
+        }
+      `}</style>
     </div>
   );
 }
