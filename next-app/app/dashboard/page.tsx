@@ -37,11 +37,13 @@ export default function Dashboard() {
     const socket = getSocket();
 
     socket.on("connect", () => {
-      // Connected
+       console.log("websocket connected");
+       
     });
 
     socket.on("video:done", ({ videoUrl }) => {
       setLoading(false);
+      console.log("video URL recived from server");
       setVideoUrl(videoUrl);
     });
 
