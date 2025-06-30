@@ -3,55 +3,67 @@ import { createServer } from "http";
 import { Server } from "socket.io";
 import { createClient } from "redis";
 
-// Read ENV
-const PORT = process.env.PORT || 4000;
-const REDIS_URL = process.env.REDIS_URL || "redis://localhost:6379";
+// Constants
+const PORT = 4000;
+const REDIS_URL = "redis://localhost:6379";
 
-// Create Redis subscriber
+// ALLOWED ORIGINS (localhost + vercel)
+const ALLOWED_ORIGINS = [
+  "http://localhost:3000",
+  "https://flow-theta-inky.vercel.app"
+];
+
+// Redis client setup
 const redis = createClient({ url: REDIS_URL });
-redis.connect().then(() => {
-  console.log("✅ Redis connected");
-}).catch(console.error);
 
-// Socket.IO server setup
+redis
+  .connect()
+  .then(() => {
+    console.log("✅ Redis connected");
+  })
+  .catch(console.error);
+
+// HTTP server for Socket.IO
 const httpServer = createServer();
 const io = new Server(httpServer, {
   cors: {
-    origin: "*", // change this to match frontend origin in prod
+    origin: ALLOWED_ORIGINS,
+    methods: ["GET", "POST"],
+    credentials: false
   }
 });
 
-// Client connects
+// Handle socket connection
 io.on("connection", (socket) => {
   console.log(`🔌 Client connected: ${socket.id}`);
 
-  // Join room by jobId
+  // Join a specific room
   socket.on("join", (jobId: string) => {
     console.log(`➡️  Socket ${socket.id} joining room ${jobId}`);
     socket.join(jobId);
   });
 
-  // Optional: client disconnect
+  // Optional disconnect log
   socket.on("disconnect", () => {
     console.log(`❌ Client disconnected: ${socket.id}`);
   });
 });
 
-// Redis Pub/Sub → forward to WebSocket
+// Redis → WebSocket broadcast
 redis.subscribe("video-ready", (message) => {
   try {
     const { jobId, videoUrl } = JSON.parse(message);
-    console.log(`📡 PubSub received: jobId=${jobId} and videoURL=${videoUrl}`);
+    console.log(`📡 PubSub received: jobId=${jobId}, videoUrl=${videoUrl}`);
 
     // Emit to room
     io.to(jobId).emit("video:done", { videoUrl });
-    console.log("Vidoe url send to the frontend");
-    
+    console.log(`✅ Emitted to room ${jobId}`);
   } catch (err) {
     console.error("❌ Failed to parse Redis message:", err);
   }
 });
 
+// Start server
 httpServer.listen(PORT, () => {
-  console.log(`🚀 WebSocket Server running on port ${PORT}`);
+  console.log(`🚀 WebSocket Server running on http://localhost:${PORT}`);
 });
