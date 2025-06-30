@@ -1,23 +1,35 @@
+// app/page.tsx
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
 import { Button } from "@/components/ui/button"
 import CanvasPreview from "@/components/CanvasPreview"
 
-export default function Home() {
+export default async function Home() {
+  const session = await getServerSession(authOptions)
+  const isLoggedIn = !!session
+
   return (
     <div className="bg-white text-zinc-900">
-
       {/* Header */}
       <header>
         <div className="max-w-7xl mx-auto h-16 px-4 sm:px-6 lg:px-8 flex items-center justify-between">
           <div className="text-2xl font-bold">Flow</div>
 
           <div className="flex items-center space-x-4">
-            <Button variant="ghost" className="text-sm" asChild>
-              <a href="/signin">Sign in</a>
-            </Button>
-
-            <Button className="text-sm px-4 py-2" asChild>
-              <a href="/signin">Get started</a>
-            </Button>
+            {!isLoggedIn ? (
+              <>
+                <Button variant="ghost" className="text-sm" asChild>
+                  <a href="/signin">Sign in</a>
+                </Button>
+                <Button className="text-sm px-4 py-2" asChild>
+                  <a href="/signin">Get started</a>
+                </Button>
+              </>
+            ) : (
+              <Button className="text-sm px-4 py-2" asChild>
+                <a href="/dashboard">Go to dashboard</a>
+              </Button>
+            )}
           </div>
         </div>
       </header>
@@ -115,7 +127,6 @@ export default function Home() {
           </a>
         </div>
       </section>
-
     </div>
   )
 }
