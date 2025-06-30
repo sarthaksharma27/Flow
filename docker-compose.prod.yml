@@ -1,0 +1,33 @@
+version: "3.8"
+
+services:
+  redis:
+    image: redis:7
+    container_name: redis
+    restart: always
+    ports:
+      - "6379:6379"
+
+  ws-server:
+    build:
+      context: ./ws-server
+    container_name: ws-server
+    restart: always
+    env_file:
+      - ./ws-server/.env
+    ports:
+      - "4000:4000"
+    depends_on:
+      - redis
+
+  worker:
+    build:
+      context: ./worker  
+    container_name: manim-worker
+    restart: always
+    env_file:
+      - ./worker/.env
+    depends_on:
+      - redis
+    volumes:
+      - ./media:/app/media

@@ -102,6 +102,8 @@ export default function Dashboard() {
 
       const videoData = await videoRes.json();
       const jobId = videoData.jobId;
+      console.log("code generated with jobID", jobId);
+      
 
       const socket = getSocket();
       socket.emit("join", jobId);
