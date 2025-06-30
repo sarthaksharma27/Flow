@@ -54,7 +54,7 @@ export default function Dashboard() {
 
     const interval = setInterval(() => {
       setLoadingMessageIndex((prev) => (prev === 0 ? 1 : 0));
-    }, 10000);
+    }, 10000); // 10 seconds
 
     return () => clearInterval(interval);
   }, [loading]);
@@ -98,15 +98,25 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-black text-white p-6">
       <div className="max-w-6xl mx-auto space-y-8">
-        {/* Header */}
-        <div className="flex items-center space-x-4">
-          <Avatar className="h-14 w-14">
-            <AvatarImage src={session?.user?.image ?? ""} alt={session?.user?.name ?? "User"} />
-            <AvatarFallback>{session?.user?.name?.charAt(0)}</AvatarFallback>
-          </Avatar>
-          <div>
-            <h2 className="text-2xl font-semibold">Welcome, {session?.user?.name}</h2>
-            <p className="text-sm text-zinc-400">Create animations using simple prompts.</p>
+        {/* Back Button + Header */}
+        <div className="space-y-2">
+          <Button
+            variant="link"
+            className="p-0 text-white hover:underline"
+            onClick={() => router.push("/")}
+          >
+            ← Go Back Home
+          </Button>
+
+          <div className="flex items-center space-x-4">
+            <Avatar className="h-14 w-14">
+              <AvatarImage src={session?.user?.image ?? ""} alt={session?.user?.name ?? "User"} />
+              <AvatarFallback>{session?.user?.name?.charAt(0)}</AvatarFallback>
+            </Avatar>
+            <div>
+              <h2 className="text-2xl font-semibold">Welcome, {session?.user?.name}</h2>
+              <p className="text-sm text-zinc-400">Create animations using simple prompts.</p>
+            </div>
           </div>
         </div>
 
@@ -118,7 +128,6 @@ export default function Dashboard() {
               Animation Prompt
             </label>
 
-            {/* Textarea + Magic Prompt Button */}
             <div className="relative">
               <Textarea
                 id="prompt"
