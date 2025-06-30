@@ -18,6 +18,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(false);
   const [videoUrl, setVideoUrl] = useState("");
   const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
+  const [validationError, setValidationError] = useState(""); // ✨ New state
 
   const magicPrompts = [
     "Animate a basic client-server interaction: a browser sends a request to a server, the server processes it and returns a response, highlighting HTTP flow and endpoints.",
@@ -36,7 +37,7 @@ export default function Dashboard() {
     const socket = getSocket();
 
     socket.on("connect", () => {
-      // console.log("✅ Connected to WebSocket:", socket.id);
+      // Connected
     });
 
     socket.on("video:done", ({ videoUrl }) => {
@@ -54,16 +55,25 @@ export default function Dashboard() {
 
     const interval = setInterval(() => {
       setLoadingMessageIndex((prev) => (prev === 0 ? 1 : 0));
-    }, 10000); // 10 seconds
+    }, 10000);
 
     return () => clearInterval(interval);
   }, [loading]);
+
+  // ✨ Auto-dismiss validation error
+  useEffect(() => {
+    if (validationError) {
+      const timeout = setTimeout(() => setValidationError(""), 4000);
+      return () => clearTimeout(timeout);
+    }
+  }, [validationError]);
 
   const handleGenerate = async () => {
     const currentPrompt = prompt;
     setPrompt("");
     setLoading(true);
     setVideoUrl("");
+    setValidationError("");
 
     try {
       const res = await fetch("/api/generate", {
@@ -73,6 +83,13 @@ export default function Dashboard() {
       });
 
       const data = await res.json();
+
+      if (res.status === 422 || res.status === 400) {
+        setLoading(false);
+        setValidationError(data.error || "Prompt invalid");
+        return;
+      }
+
       const rawCode = data.code.replace(/^```(?:\w+)?\n/, "").replace(/```$/, "");
 
       const videoRes = await fetch("/api/videoGenerate", {
@@ -87,7 +104,9 @@ export default function Dashboard() {
       const socket = getSocket();
       socket.emit("join", jobId);
     } catch (err) {
+      setLoading(false);
       console.error("❌ Error:", err);
+      setValidationError("Something went wrong while generating animation.");
     }
   };
 
@@ -98,7 +117,6 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-black text-white p-6">
       <div className="max-w-6xl mx-auto space-y-8">
-        {/* Back Button + Header */}
         <div className="space-y-2">
           <Button
             variant="link"
@@ -120,9 +138,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Content */}
         <div className="flex flex-col md:flex-row md:space-x-8 space-y-6 md:space-y-0">
-          {/* Input Area */}
           <div className="flex-1 space-y-3">
             <label htmlFor="prompt" className="text-sm font-medium">
               Animation Prompt
@@ -137,6 +153,7 @@ export default function Dashboard() {
                 onChange={(e) => setPrompt(e.target.value)}
               />
 
+              {/* ✨ Magic Prompt Popover */}
               <Popover>
                 <PopoverTrigger asChild>
                   <button
@@ -163,6 +180,21 @@ export default function Dashboard() {
                   ))}
                 </PopoverContent>
               </Popover>
+
+              {/* ✨ Validation Error Popover */}
+              {validationError && (
+                <Popover open={!!validationError}>
+                  <PopoverTrigger asChild>
+                    <div />
+                  </PopoverTrigger>
+                  <PopoverContent
+                    side="bottom"
+                    className="bg-red-900 border border-red-700 text-white max-w-sm rounded-md p-3"
+                  >
+                    <p className="text-sm">{validationError}</p>
+                  </PopoverContent>
+                </Popover>
+              )}
             </div>
 
             <Button
@@ -181,7 +213,7 @@ export default function Dashboard() {
             </Button>
           </div>
 
-          {/* Video Preview */}
+          {/* Preview Section */}
           <div className="flex-1 space-y-4">
             <div className="aspect-[16/9] w-full bg-zinc-900 rounded-xl flex items-center justify-center shadow-md">
               {loading ? (

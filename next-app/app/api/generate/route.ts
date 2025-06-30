@@ -11,10 +11,11 @@ export async function POST(req: NextRequest) {
   }
 
   // Step 1: Basic validation
-  const isValid = validatePrompt(prompt)
-  if (!isValid) {
-    return NextResponse.json({ error: "Prompt not supported by Manim" }, { status: 422 })
+  const { valid, reason } = validatePrompt(prompt)
+  if (!valid) {
+    return NextResponse.json({ error: reason }, { status: 422 })
   }
+
 
   // Step 2: Call LLM to generate code
   try {
