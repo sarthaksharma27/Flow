@@ -17,9 +17,9 @@ export default function Dashboard() {
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
   const [videoUrl, setVideoUrl] = useState("");
+  const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
 
   const magicPrompts = [
-    "Demonstrate rotating a 2D matrix (3x3 or 4x4) clockwise 90 degrees, with original and rotated versions side-by-side.",
     "Animate a basic client-server interaction: a browser sends a request to a server, the server processes it and returns a response, highlighting HTTP flow and endpoints.",
     "Show a binary tree and animate an in-order traversal, highlighting each visited node in order (left, root, right).",
     "Show a simple neural network (input, hidden, and output layers), animating the forward pass of data with weights and activations.",
@@ -36,11 +36,10 @@ export default function Dashboard() {
     const socket = getSocket();
 
     socket.on("connect", () => {
-      console.log("✅ Connected to WebSocket:", socket.id);
+      // console.log("✅ Connected to WebSocket:", socket.id);
     });
 
     socket.on("video:done", ({ videoUrl }) => {
-      console.log("🎥 Video Ready:", videoUrl);
       setLoading(false);
       setVideoUrl(videoUrl);
     });
@@ -49,6 +48,16 @@ export default function Dashboard() {
       socket.disconnect();
     };
   }, []);
+
+  useEffect(() => {
+    if (!loading) return;
+
+    const interval = setInterval(() => {
+      setLoadingMessageIndex((prev) => (prev === 0 ? 1 : 0));
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, [loading]);
 
   const handleGenerate = async () => {
     const currentPrompt = prompt;
@@ -65,7 +74,6 @@ export default function Dashboard() {
 
       const data = await res.json();
       const rawCode = data.code.replace(/^```(?:\w+)?\n/, "").replace(/```$/, "");
-      console.log(rawCode);
 
       const videoRes = await fetch("/api/videoGenerate", {
         method: "POST",
@@ -98,7 +106,7 @@ export default function Dashboard() {
           </Avatar>
           <div>
             <h2 className="text-2xl font-semibold">Welcome, {session?.user?.name}</h2>
-            <p className="text-sm text-zinc-400">Create math animations using simple prompts.</p>
+            <p className="text-sm text-zinc-400">Create animations using simple prompts.</p>
           </div>
         </div>
 
@@ -114,7 +122,7 @@ export default function Dashboard() {
             <div className="relative">
               <Textarea
                 id="prompt"
-                placeholder="e.g. Show the Pythagorean theorem visually..."
+                placeholder="e.g. Animate the TCP handshake"
                 className="text-white bg-zinc-800 resize-none h-[120px] border border-zinc-700 placeholder:text-zinc-400 pr-10"
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
@@ -170,7 +178,11 @@ export default function Dashboard() {
               {loading ? (
                 <div className="flex flex-col items-center justify-center space-y-3 text-zinc-400">
                   <div className="w-10 h-10 border-4 border-white border-t-transparent rounded-full animate-spin" />
-                  <p className="text-sm animate-pulse">Generating animation preview...</p>
+                  <p className="text-sm animate-pulse text-center">
+                    {loadingMessageIndex === 0
+                      ? "Generating animation preview..."
+                      : "This may take some extra time as we are using the DeepSeek model."}
+                  </p>
                 </div>
               ) : videoUrl ? (
                 <video
