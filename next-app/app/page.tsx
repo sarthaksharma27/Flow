@@ -2,6 +2,7 @@
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
 import CanvasPreview from "@/components/CanvasPreview"
 
 export default async function Home() {
@@ -56,12 +57,28 @@ export default async function Home() {
 
           <div className="flex justify-center space-x-4 pt-4">
             <Button className="text-sm px-6 py-3" asChild>
-              <a href="/studio">Try it now</a>
+              <a href="/signin">Try it now</a>
             </Button>
 
-            <Button variant="outline" className="text-sm px-6 py-3" asChild>
-              <a href="/demo">Watch demo</a>
-            </Button>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="text-sm px-6 py-3">
+                  Watch demo
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-4xl w-ful">
+                <div className="aspect-video w-full">
+                  <video
+                    controls
+                    autoPlay
+                    className="w-full h-full object-contain rounded-lg"
+                  >
+                    <source src="/demo.mp4" type="video/mp4" />
+                    Your browser does not support the video tag.
+                  </video>
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
       </section>
