@@ -2,7 +2,9 @@
 
 export function validatePrompt(prompt: string): { valid: boolean; reason?: string } {
   const lower = prompt.toLowerCase()
-  const bannedWords = ["explode", "game", "3d", "chatbot", "api", "backend", "VR"]
+  const bannedWords = ["explode", "game", "3d", "chatbot", "api", "backend", "VR", "forget", "Forgot", "Forget",
+    "system", "prompt", "execute", "kill", "bad"
+  ]
 
   if (prompt.length < 10) {
     return { valid: false, reason: "Prompt is too short. Be more descriptive." }
