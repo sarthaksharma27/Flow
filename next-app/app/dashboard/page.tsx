@@ -95,9 +95,17 @@ export default function Dashboard() {
         body: JSON.stringify({ code: rawCode }),
       });
 
+      function saveJobWithTimestamp(jobId: string) {
+      const entry = { jobId, createdAt: new Date().toISOString() };
+      const existing = JSON.parse(localStorage.getItem("jobs") || "[]");
+      const updated = [entry, ...existing.filter((j: { jobId: string; }) => j.jobId !== jobId)];
+      localStorage.setItem("jobs", JSON.stringify(updated));
+    }
+
       const videoData = await videoRes.json();
       const jobId = videoData.jobId;
       console.log("code generated with jobID", jobId);
+      saveJobWithTimestamp(jobId);
 
       const socket = getSocket();
       socket.emit("join", jobId);

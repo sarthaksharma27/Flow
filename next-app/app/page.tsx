@@ -13,27 +13,33 @@ export default async function Home() {
     <div className="bg-white text-zinc-900">
       {/* Header */}
       <header>
-        <div className="max-w-7xl mx-auto h-16 px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-          <div className="text-2xl font-bold">Flow</div>
+  <div className="max-w-7xl mx-auto h-16 px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+    <div className="text-2xl font-bold">Flow</div>
 
-          <div className="flex items-center space-x-4">
-            {!isLoggedIn ? (
-              <>
-                <Button variant="ghost" className="text-sm" asChild>
-                  <a href="/signin">Sign in</a>
-                </Button>
-                <Button className="text-sm px-4 py-2" asChild>
-                  <a href="/signin">Get started</a>
-                </Button>
-              </>
-            ) : (
-              <Button className="text-sm px-4 py-2" asChild>
-                <a href="/dashboard">Go to dashboard</a>
-              </Button>
-            )}
-          </div>
-        </div>
-      </header>
+    <div className="flex items-center space-x-4">
+      {!isLoggedIn ? (
+        <>
+          <Button variant="ghost" className="text-sm" asChild>
+            <a href="/signin">Sign in</a>
+          </Button>
+          <Button className="text-sm px-4 py-2" asChild>
+            <a href="/signin">Get started</a>
+          </Button>
+        </>
+      ) : (
+        <>
+          <Button className="text-sm px-4 py-2" asChild>
+            <a href="/dashboard">Go to dashboard</a>
+          </Button>
+          <Button variant="secondary" className="text-sm px-4 py-2" asChild>
+            <a href="/my-videos">My Videos</a>
+          </Button>
+        </>
+      )}
+    </div>
+  </div>
+</header>
+
 
       {/* Hero Section */}
       <section className="w-full pt-20 pb-4">
