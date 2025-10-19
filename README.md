@@ -6,7 +6,7 @@ Built something cool that turns prompts into 2D animated videos using the Manim 
 Perfect for teaching, Explaining dev concepts or just geeking out. Just type a prompt → Get a slick animation
 
 Here is the System desing doc - https://www.notion.so/Flow-System-design-doc-220c591ae88a80da87bbe95ade0222f1?source=copy_link   
- It explains exactly what this application does, its architecture, the limitations of that architecture, and the design choices I made — along with the reasoning behind them.
+It explains exactly what this application does, its architecture, the limitations of that architecture, and the design choices I made — along with the reasoning behind them.
 
 
 
