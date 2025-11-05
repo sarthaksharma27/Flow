@@ -86,5 +86,5 @@ Start the Backend
 docker compose up
 ```
 
-The will start Backend and redis server
+The will start Backend and redis server.
 
